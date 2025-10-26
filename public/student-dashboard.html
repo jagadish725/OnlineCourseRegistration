@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Course Registration</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <h2>📚 Student Dashboard</h2>
+            <div class="navbar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span id="userName">Loading...</span>
+                </div>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Current Courses</h3>
+                <div class="number" id="currentCourses">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Completed Courses</h3>
+                <div class="number" id="completedCourses">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Credits</h3>
+                <div class="number" id="totalCredits">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>GPA</h3>
+                <div class="number" id="gpa">0.00</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="card">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="showTab('courses')">Browse Courses</button>
+                <button class="btn btn-secondary" onclick="showTab('enrolled')">My Enrollments</button>
+                <button class="btn btn-secondary" onclick="showTab('profile')">Profile</button>
+            </div>
+        </div>
+
+        <!-- Browse Courses Tab -->
+        <div id="coursesTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Available Courses</h3>
+                    <button class="btn btn-success" onclick="loadCourses()">🔄 Refresh</button>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="search-filter">
+                    <div class="search-box">
+                        <input type="text" id="searchCourses" class="form-group" placeholder="Search courses..." 
+                               onkeyup="filterCourses()" style="margin-bottom: 0;">
+                    </div>
+                    <select id="departmentFilter" onchange="filterCourses()" class="form-group" style="width: 200px; margin-bottom: 0;">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+
+                <div id="coursesList" class="course-grid">
+                    <p>Loading courses...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Enrollments Tab -->
+        <div id="enrolledTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Current Enrollments</h3>
+                    <button class="btn btn-success" onclick="loadEnrollments()">🔄 Refresh</button>
+                </div>
+
+                <div id="enrollmentsList" class="table-container">
+                    <p>Loading enrollments...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profileTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Profile</h3>
+                </div>
+
+                <div id="profileInfo">
+                    <p>Loading profile...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Details Modal -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalCourseTitle">Course Details</h3>
+                <span class="close-modal" onclick="closeCourseModal()">&times;</span>
+            </div>
+            <div id="modalCourseDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        let allCourses = [];
+        let currentUser = null;
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/session');
+                const data = await response.json();
+
+                if (!data.authenticated || data.user.type !== 'student') {
+                    window.location.href = '/';
+                    return;
+                }
+
+                currentUser = data.user;
+                document.getElementById('userName').textContent = data.user.name;
+                document.getElementById('userAvatar').textContent = data.user.name.charAt(0).toUpperCase();
+                
+                loadDashboardData();
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            await loadAcademicSummary();
+            await loadDepartments();
+            await loadCourses();
+            await loadEnrollments();
+        }
+
+        // Load academic summary
+        async function loadAcademicSummary() {
+            try {
+                const response = await fetch('/api/student/academic-summary');
+                const data = await response.json();
+
+                if (data.success && data.summary) {
+                    document.getElementById('currentCourses').textContent = data.summary.active_courses || 0;
+                    document.getElementById('completedCourses').textContent = data.summary.completed_courses || 0;
+                    document.getElementById('totalCredits').textContent = data.summary.total_credits || 0;
+                    document.getElementById('gpa').textContent = data.summary.gpa ? data.summary.gpa.toFixed(2) : '0.00';
+                }
+            } catch (error) {
+                console.error('Load summary error:', error);
+            }
+        }
+
+        // Load departments for filter
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/courses/departments/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    const select = document.getElementById('departmentFilter');
+                    data.departments.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept.department_id;
+                        option.textContent = dept.department_name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Load departments error:', error);
+            }
+        }
+
+        // Load available courses
+        async function loadCourses() {
+            try {
+                const response = await fetch('/api/courses/available');
+                const data = await response.json();
+
+                if (data.success) {
+                    allCourses = data.courses;
+                    displayCourses(allCourses);
+                }
+            } catch (error) {
+                console.error('Load courses error:', error);
+                document.getElementById('coursesList').innerHTML = '<p>Failed to load courses</p>';
+            }
+        }
+
+        // Display courses
+        function displayCourses(courses) {
+            const container = document.getElementById('coursesList');
+            
+            if (courses.length === 0) {
+                container.innerHTML = '<p>No courses available</p>';
+                return;
+            }
+
+            container.innerHTML = courses.map(course => `
+                <div class="course-card">
+                    <div class="course-header">
+                        <div class="course-code">${course.course_code}</div>
+                        <div class="course-credits">${course.credits} Credits</div>
+                    </div>
+                    <div class="course-title">${course.course_name}</div>
+                    <div class="course-info">📚 ${course.department_name || 'N/A'}</div>
+                    <div class="course-info">👨‍🏫 ${course.instructor_name || 'TBA'}</div>
+                    <div class="course-info">📅 ${course.schedule_days} ${course.schedule_time}</div>
+                    <div class="course-info">🏫 ${course.classroom}</div>
+                    <div class="course-footer">
+                        <span class="badge ${course.available_seats > 5 ? 'badge-success' : 'badge-warning'}">
+                            ${course.available_seats} / ${course.max_capacity} seats
+                        </span>
+                        <button class="btn btn-primary" onclick="viewCourseDetails(${course.offering_id})">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter courses
+        function filterCourses() {
+            const search = document.getElementById('searchCourses').value.toLowerCase();
+            const department = document.getElementById('departmentFilter').value;
+
+            const filtered = allCourses.filter(course => {
+                const matchSearch = !search || 
+                    course.course_code.toLowerCase().includes(search) ||
+                    course.course_name.toLowerCase().includes(search);
+                
+                const matchDept = !department || course.department_name === 
+                    document.getElementById('departmentFilter').selectedOptions[0].textContent;
+
+                return matchSearch && matchDept;
+            });
+
+            displayCourses(filtered);
+        }
+
+        // View course details
+        async function viewCourseDetails(offeringId) {
+            try {
+                const response = await fetch(`/api/courses/${offeringId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const course = data.course;
+                    document.getElementById('modalCourseTitle').textContent = course.course_name;
+                    document.getElementById('modalCourseDetails').innerHTML = `
+                        <p><strong>Course Code:</strong> ${course.course_code}</p>
+                        <p><strong>Credits:</strong> ${course.credits}</p>
+                        <p><strong>Department:</strong> ${course.department_name || 'N/A'}</p>
+                        <p><strong>Section:</strong> ${course.section_number}</p>
+                        <p><strong>Instructor:</strong> ${course.instructor_name || 'TBA'}</p>
+                        ${course.instructor_email ? `<p><strong>Email:</strong> ${course.instructor_email}</p>` : ''}
+                        ${course.office_location ? `<p><strong>Office:</strong> ${course.office_location}</p>` : ''}
+                        <p><strong>Schedule:</strong> ${course.schedule_days} ${course.schedule_time}</p>
+                        <p><strong>Classroom:</strong> ${course.classroom}</p>
+                        <p><strong>Capacity:</strong> ${course.enrolled_count} / ${course.max_capacity}</p>
+                        ${course.prerequisite_code ? `<p><strong>Prerequisite:</strong> ${course.prerequisite_code}</p>` : ''}
+                        <p><strong>Description:</strong></p>
+                        <p>${course.description || 'No description available'}</p>
+                        <hr>
+                        <button class="btn btn-success" onclick="enrollCourse(${offeringId})" style="width: 100%;">
+                            Enroll Now
+                        </button>
+                    `;
+                    document.getElementById('courseModal').classList.add('show');
+                }
+            } catch (error) {
+                console.error('View course details error:', error);
+                showAlert('Failed to load course details');
+            }
+        }
+
+        // Close modal
+        function closeCourseModal() {
+            document.getElementById('courseModal').classList.remove('show');
+        }
+
+        // Enroll in course
+        async function enrollCourse(offeringId) {
+            if (!confirm('Are you sure you want to enroll in this course?')) return;
+
+            try {
+                const response = await fetch('/api/enrollment/enroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ offeringId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Enrollment successful!', 'success');
+                    closeCourseModal();
+                    loadCourses();
+                    loadEnrollments();
+                    loadAcademicSummary();
+                } else {
+                    showAlert(data.message || 'Enrollment failed');
+                }
+            } catch (error) {
+                console.error('Enroll error:', error);
+                showAlert('Failed to enroll');
+            }
+        }
+
+        // Load enrollments
+        async function loadEnrollments() {
+            try {
+                const response = await fetch('/api/student/current-enrollments');
+                const data = await response.json();
+
+                const container = document.getElementById('enrollmentsList');
+
+                if (data.success && data.enrollments.length > 0) {
+                    container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Section</th>
+                                    <th>Credits</th>
+                                    <th>Instructor</th>
+                                    <th>Schedule</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.enrollments.map(e => `
+                                    <tr>
+                                        <td>${e.course_code}</td>
+                                        <td>${e.course_name}</td>
+                                        <td>${e.section_number}</td>
+                                        <td>${e.credits}</td>
+                                        <td>${e.instructor_name || 'TBA'}</td>
+                                        <td>${e.schedule_days} ${e.schedule_time}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="dropCourse(${e.enrollment_id})">
+                                                Drop
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = '<p>No current enrollments</p>';
+                }
+            } catch (error) {
+                console.error('Load enrollments error:', error);
+                container.innerHTML = '<p>Failed to load enrollments</p>';
+            }
+        }
+
+        // Drop course
+        async function dropCourse(enrollmentId) {
+            if (!confirm('Are you sure you want to drop this course?')) return;
+
+            try {
+                const response = await fetch('/api/enrollment/drop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enrollmentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Course dropped successfully', 'success');
+                    loadEnrollments();
+                    loadCourses();
+                    loadAcademicSummary();
+                } else {
+                    showAlert(data.message || 'Failed to drop course');
+                }
+            } catch (error) {
+                console.error('Drop course error:', error);
+                showAlert('Failed to drop course');
+            }
+        }
+
+        // Show/hide tabs
+        function showTab(tab) {
+            document.getElementById('coursesTab').style.display = 'none';
+            document.getElementById('enrolledTab').style.display = 'none';
+            document.getElementById('profileTab').style.display = 'none';
+
+            document.getElementById(tab + 'Tab').style.display = 'block';
+
+            if (tab === 'profile') {
+                loadProfile();
+            }
+        }
+
+        // Load profile
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/student/profile');
+                const data = await response.json();
+
+                if (data.success) {
+                    const student = data.student;
+                    document.getElementById('profileInfo').innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <div>
+                                <p><strong>Student Number:</strong> ${student.student_number}</p>
+                                <p><strong>Name:</strong> ${student.first_name} ${student.last_name}</p>
+                                <p><strong>Email:</strong> ${student.email}</p>
+                                <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p><strong>Department:</strong> ${student.department_name || 'N/A'}</p>
+                                <p><strong>Enrollment Year:</strong> ${student.enrollment_year || 'N/A'}</p>
+                                <p><strong>Current Semester:</strong> ${student.current_semester || 'N/A'}</p>
+                                <p><strong>Status:</strong> <span class="badge badge-success">${student.status}</span></p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Load profile error:', error);
+            }
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Alert functions
+        function showAlert(message, type = 'danger') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => hideAlert(), 5000);
+        }
+
+        function hideAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.classList.remove('show');
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

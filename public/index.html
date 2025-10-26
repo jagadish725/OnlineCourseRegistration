@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Course Registration System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-left">
+                <h1>📚 Course Registration</h1>
+                <p>Welcome to the Online Course Registration System. Manage your academic journey with ease. Enroll in courses, view your schedule, and track your progress all in one place.</p>
+                <br>
+                <p><strong>Features:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Browse available courses</li>
+                    <li>Enroll and drop courses</li>
+                    <li>View your schedule</li>
+                    <li>Track academic progress</li>
+                    <li>Access course information</li>
+                </ul>
+            </div>
+            
+            <div class="login-right">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('student')">Student</button>
+                    <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
+                </div>
+
+                <div id="alertBox" class="alert"></div>
+
+                <!-- Student Login Form -->
+                <form id="studentLoginForm" class="login-form active">
+                    <h2 style="margin-bottom: 20px; color: #2c3e50;">Student Login</h2>
+                    
+                    <div class="form-group">
+                        <label for="studentEmail">Email</label>
+                        <input type="email" id="studentEmail" placeholder="your.email@student.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentPassword">Password</label>
+                        <input type="password" id="studentPassword" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Login</button>
+
+                    <p style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                        <small>Don't have an account? <a href="#" onclick="showRegisterForm(); return false;" style="color: #3498db; text-decoration: underline;">Register here</a></small>
+                    </p>
+
+                    <p style="text-align: center; margin-top: 10px; color: #7f8c8d;">
+                        <small>Demo: alice.anderson@student.edu / student123</small>
+                    </p>
+                </form>
+
+                <!-- Student Registration Form -->
+                <form id="studentRegisterForm" class="login-form" style="display: none;">
+                    <h2 style="margin-bottom: 20px; color: #2c3e50;">Student Registration</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regFirstName">First Name *</label>
+                            <input type="text" id="regFirstName" placeholder="John" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regLastName">Last Name *</label>
+                            <input type="text" id="regLastName" placeholder="Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regStudentNumber">Student Number *</label>
+                        <input type="text" id="regStudentNumber" placeholder="STU2025006" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regEmail">Email *</label>
+                        <input type="email" id="regEmail" placeholder="john.doe@student.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Password *</label>
+                        <input type="password" id="regPassword" placeholder="Minimum 6 characters" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPhone">Phone</label>
+                        <input type="tel" id="regPhone" placeholder="555-1234">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regDOB">Date of Birth</label>
+                            <input type="date" id="regDOB">
+                        </div>
+                        <div class="form-group">
+                            <label for="regGender">Gender</label>
+                            <select id="regGender">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regDepartment">Department *</label>
+                        <select id="regDepartment" required>
+                            <option value="">Select Department</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regYear">Enrollment Year *</label>
+                        <input type="number" id="regYear" placeholder="2025" required min="2020" max="2030">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAddress">Address</label>
+                        <textarea id="regAddress" placeholder="Enter your address" rows="2"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Register</button>
+
+                    <p style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                        <small>Already have an account? <a href="#" onclick="showLoginForm(); return false;" style="color: #3498db; text-decoration: underline;">Login here</a></small>
+                    </p>
+                </form>
+
+                <!-- Admin Login Form -->
+                <form id="adminLoginForm" class="login-form">
+                    <h2 style="margin-bottom: 30px; color: #2c3e50;">Admin Login</h2>
+                    
+                    <div class="form-group">
+                        <label for="adminEmail">Email</label>
+                        <input type="email" id="adminEmail" placeholder="admin@university.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Login</button>
+
+                    <p style="text-align: center; margin-top: 20px; color: #7f8c8d;">
+                        <small>Demo: admin@university.edu / admin123</small>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            const studentForm = document.getElementById('studentLoginForm');
+            const adminForm = document.getElementById('adminLoginForm');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+
+            if (tab === 'student') {
+                studentForm.classList.add('active');
+                adminForm.classList.remove('active');
+                tabButtons[0].classList.add('active');
+            } else {
+                adminForm.classList.add('active');
+                studentForm.classList.remove('active');
+                tabButtons[1].classList.add('active');
+            }
+
+            hideAlert();
+        }
+
+        // Show alert
+        function showAlert(message, type = 'danger') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => hideAlert(), 5000);
+        }
+
+        // Hide alert
+        function hideAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.classList.remove('show');
+        }
+
+        // Student Login
+        document.getElementById('studentLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('studentEmail').value;
+            const password = document.getElementById('studentPassword').value;
+
+            try {
+                const response = await fetch('/api/auth/student/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/student-dashboard';
+                    }, 1000);
+                } else {
+                    showAlert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                showAlert('An error occurred. Please try again.');
+                console.error('Login error:', error);
+            }
+        });
+
+        // Admin Login
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            try {
+                const response = await fetch('/api/auth/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin-dashboard';
+                    }, 1000);
+                } else {
+                    showAlert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                showAlert('An error occurred. Please try again.');
+                console.error('Login error:', error);
+            }
+        });
+
+        // Show/Hide Registration Form
+        function showRegisterForm() {
+            document.getElementById('studentLoginForm').style.display = 'none';
+            document.getElementById('studentRegisterForm').style.display = 'block';
+            hideAlert();
+            loadDepartments();
+        }
+
+        function showLoginForm() {
+            document.getElementById('studentLoginForm').style.display = 'block';
+            document.getElementById('studentRegisterForm').style.display = 'none';
+            hideAlert();
+        }
+
+        // Load Departments
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/courses/departments/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    const select = document.getElementById('regDepartment');
+                    select.innerHTML = '<option value="">Select Department</option>';
+                    data.departments.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept.department_id;
+                        option.textContent = dept.department_name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        // Student Registration
+        document.getElementById('studentRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                studentNumber: document.getElementById('regStudentNumber').value.trim(),
+                firstName: document.getElementById('regFirstName').value.trim(),
+                lastName: document.getElementById('regLastName').value.trim(),
+                email: document.getElementById('regEmail').value.trim(),
+                password: document.getElementById('regPassword').value,
+                phone: document.getElementById('regPhone').value.trim() || null,
+                dateOfBirth: document.getElementById('regDOB').value || null,
+                gender: document.getElementById('regGender').value || null,
+                address: document.getElementById('regAddress').value.trim() || null,
+                departmentId: document.getElementById('regDepartment').value,
+                enrollmentYear: parseInt(document.getElementById('regYear').value)
+            };
+
+            // Validation
+            if (!formData.departmentId) {
+                showAlert('Please select a department', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/student/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Registration successful! Please login with your credentials.', 'success');
+                    setTimeout(() => {
+                        showLoginForm();
+                        document.getElementById('studentEmail').value = formData.email;
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                showAlert('An error occurred. Please try again.');
+                console.error('Registration error:', error);
+            }
+        });
+
+        // Check if already logged in
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/auth/session');
+                const data = await response.json();
+
+                if (data.authenticated) {
+                    if (data.user.type === 'student') {
+                        window.location.href = '/student-dashboard';
+                    } else if (data.user.type === 'admin') {
+                        window.location.href = '/admin-dashboard';
+                    }
+                }
+            } catch (error) {
+                console.error('Session check error:', error);
+            }
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>

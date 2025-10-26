@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Course Registration</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <h2>⚙️ Admin Dashboard</h2>
+            <div class="navbar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span id="userName">Loading...</span>
+                </div>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Active Students</h3>
+                <div class="number" id="activeStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Courses</h3>
+                <div class="number" id="totalCourses">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Current Offerings</h3>
+                <div class="number" id="currentOfferings">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Current Enrollments</h3>
+                <div class="number" id="currentEnrollments">0</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="card">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="showTab('students')">Students</button>
+                <button class="btn btn-secondary" onclick="showTab('courses')">Courses</button>
+                <button class="btn btn-secondary" onclick="showTab('offerings')">Course Offerings</button>
+                <button class="btn btn-secondary" onclick="showTab('instructors')">Instructors</button>
+                <button class="btn btn-secondary" onclick="showTab('semesters')">Semesters</button>
+                <button class="btn btn-secondary" onclick="showTab('reports')">Reports</button>
+            </div>
+        </div>
+
+        <!-- Students Tab -->
+        <div id="studentsTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Manage Students</h3>
+                    <button class="btn btn-success" onclick="loadStudents()">🔄 Refresh</button>
+                </div>
+
+                <div id="studentsList" class="table-container">
+                    <p>Loading students...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses Tab -->
+        <div id="coursesTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Manage Courses</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="showAddCourseModal()">+ Add Course</button>
+                        <button class="btn btn-secondary" onclick="loadCourses()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div id="coursesList" class="table-container">
+                    <p>Loading courses...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Offerings Tab -->
+        <div id="offeringsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Manage Course Offerings</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="showAddOfferingModal()">+ Add Offering</button>
+                        <button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div id="offeringsList" class="table-container">
+                    <p>Loading offerings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructors Tab -->
+        <div id="instructorsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Manage Instructors</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="showAddInstructorModal()">+ Add Instructor</button>
+                        <button class="btn btn-secondary" onclick="loadInstructors()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div id="instructorsList" class="table-container">
+                    <p>Loading instructors...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semesters Tab -->
+        <div id="semestersTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Manage Semesters</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="showAddSemesterModal()">+ Add Semester</button>
+                        <button class="btn btn-secondary" onclick="loadSemesters()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div id="semestersList" class="table-container">
+                    <p>Loading semesters...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reportsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Reports & Analytics</h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <button class="btn btn-secondary" onclick="loadReport('enrollment-stats')">Enrollment Statistics</button>
+                    <button class="btn btn-secondary" onclick="loadReport('popular-courses')">Popular Courses</button>
+                    <button class="btn btn-secondary" onclick="loadReport('department-stats')">Department Stats</button>
+                    <button class="btn btn-secondary" onclick="loadReport('instructor-workload')">Instructor Workload</button>
+                    <button class="btn btn-secondary" onclick="loadReport('capacity-utilization')">Capacity Utilization</button>
+                    <button class="btn btn-secondary" onclick="loadReport('student-load')">Student Load</button>
+                </div>
+
+                <div id="reportContent" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h3 id="reportTitle">Report</h3>
+                    </div>
+                    <div id="reportData"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div id="addCourseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Course</h3>
+                <span class="close-modal" onclick="closeModal('addCourseModal')">&times;</span>
+            </div>
+            <form id="addCourseForm">
+                <div class="form-group">
+                    <label>Course Code</label>
+                    <input type="text" name="courseCode" required>
+                </div>
+                <div class="form-group">
+                    <label>Course Name</label>
+                    <input type="text" name="courseName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Credits</label>
+                    <input type="number" name="credits" min="1" max="6" required>
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="departmentId" id="courseDepartment" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Prerequisite Course (Optional)</label>
+                    <select name="prerequisiteCourseId" id="prerequisiteCourse">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Course</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Offering Modal -->
+    <div id="addOfferingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Course Offering</h3>
+                <span class="close-modal" onclick="closeModal('addOfferingModal')">&times;</span>
+            </div>
+            <form id="addOfferingForm">
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="courseId" id="offeringCourse" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select name="semesterId" id="offeringSemester" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Instructor</label>
+                    <select name="instructorId" id="offeringInstructor" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Section Number</label>
+                    <input type="text" name="sectionNumber" placeholder="A" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Capacity</label>
+                    <input type="number" name="maxCapacity" min="1" value="30" required>
+                </div>
+                <div class="form-group">
+                    <label>Schedule Days</label>
+                    <input type="text" name="scheduleDays" placeholder="Mon/Wed" required>
+                </div>
+                <div class="form-group">
+                    <label>Schedule Time</label>
+                    <input type="text" name="scheduleTime" placeholder="09:00-10:30" required>
+                </div>
+                <div class="form-group">
+                    <label>Classroom</label>
+                    <input type="text" name="classroom" placeholder="Tech-101" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Offering</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Instructor Modal -->
+    <div id="addInstructorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Instructor</h3>
+                <span class="close-modal" onclick="closeModal('addInstructorModal')">&times;</span>
+            </div>
+            <form id="addInstructorForm">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone">
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="departmentId" id="instructorDepartment" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Hire Date</label>
+                    <input type="date" name="hireDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Office Location</label>
+                    <input type="text" name="officeLocation" placeholder="Tech-301">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Instructor</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Semester Modal -->
+    <div id="addSemesterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Semester</h3>
+                <span class="close-modal" onclick="closeModal('addSemesterModal')">&times;</span>
+            </div>
+            <form id="addSemesterForm">
+                <div class="form-group">
+                    <label>Semester Name</label>
+                    <select name="semesterName" required>
+                        <option value="Spring">Spring</option>
+                        <option value="Summer">Summer</option>
+                        <option value="Fall">Fall</option>
+                        <option value="Winter">Winter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year</label>
+                    <input type="text" name="academicYear" placeholder="2025-2026" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" name="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" name="endDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Registration Start</label>
+                    <input type="date" name="registrationStart" required>
+                </div>
+                <div class="form-group">
+                    <label>Registration End</label>
+                    <input type="date" name="registrationEnd" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="isCurrent" style="width: auto; margin-right: 10px;">
+                        Set as Current Semester
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Semester</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                         ONLINE COURSE REGISTRATION SYSTEM - ER DIAGRAM                               ║
+║                                     (ASCII Art Version)                                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+                                    ┌─────────────────────────────┐
+                                    │       DEPARTMENTS           │
+                                    ├─────────────────────────────┤
+                                    │ PK: department_id           │
+                                    │ UK: department_code         │
+                                    │ • department_name           │
+                                    │ • building                  │
+                                    │ • contact_email             │
+                                    │ • contact_phone             │
+                                    └──────┬─────────┬────────┬───┘
+                                           │         │        │
+                          ┌────────────────┘         │        └──────────────────┐
+                          │ (1:N)                    │ (1:N)                     │ (1:N)
+                          │ "has"                    │ "offers"                  │ "employs"
+                          │                          │                           │
+            ┌─────────────▼──────────┐   ┌──────────▼──────────┐   ┌───────────▼─────────┐
+            │      STUDENTS          │   │      COURSES        │   │    INSTRUCTORS      │
+            ├────────────────────────┤   ├─────────────────────┤   ├─────────────────────┤
+            │ PK: student_id         │   │ PK: course_id       │   │ PK: instructor_id   │
+            │ UK: student_number     │   │ UK: course_code     │   │ UK: instructor_no   │
+            │ UK: email              │   │ • course_name       │   │ UK: email           │
+            │ • first_name           │   │ • description       │   │ • first_name        │
+            │ • last_name            │   │ • credits           │   │ • last_name         │
+            │ • password_hash        │   │ FK: department_id   │   │ • phone             │
+            │ • phone                │   │ FK: prerequisite_id │───┐ • office_location   │
+            │ • date_of_birth        │   └─────────┬───────────┘   │ FK: department_id   │
+            │ • gender               │             │               │ • status            │
+            │ • address              │             │               │ • created_at        │
+            │ FK: department_id      │             │(self-ref)     └──────┬──────────────┘
+            │ • enrollment_year      │             │ (1:N)                │
+            │ • current_semester     │             │ "prerequisite"       │
+            │ • gpa                  │             └──────────────────────┤
+            │ • status               │                                    │
+            │ • created_at           │             ┌──────────────────────┘
+            └─────┬────────┬─────────┘             │
+                  │        │                       │
+                  │        │                       │
+                  │        │                       │
+                  │        │          ┌────────────▼────────────┐
+                  │        │          │     SEMESTERS           │
+                  │        │          ├─────────────────────────┤
+                  │        │          │ PK: semester_id         │
+                  │        │          │ • semester_name         │
+                  │        │          │ • academic_year         │
+                  │        │          │ • start_date            │
+                  │        │          │ • end_date              │
+                  │        │          │ • registration_start    │
+                  │        │          │ • registration_end      │
+                  │        │          │ • is_current            │
+                  │        │          └────────┬────────────────┘
+                  │        │                   │
+                  │        │                   │ (1:N)
+                  │        │                   │ "schedules"
+                  │        │                   │
+                  │        │          ┌────────▼─────────────────────────────┐
+                  │        │          │      COURSE_OFFERINGS                │
+                  │        │          ├──────────────────────────────────────┤
+                  │        │          │ PK: offering_id                      │
+                  │        │          │ FK: course_id        ────────────────┤─────┐
+                  │        │          │ FK: semester_id                      │     │
+                  │        │          │ FK: instructor_id    ────────────────┤─────┤──┐
+                  │        │          │ • section_number                     │     │  │
+                  │        │          │ • max_capacity                       │     │  │
+                  │        │          │ • enrolled_count (denormalized)      │     │  │
+                  │        │          │ • schedule_days                      │     │  │
+                  │        │          │ • schedule_time                      │     │  │
+                  │        │          │ • classroom                          │     │  │
+                  │        │          │ • status                             │     │  │
+                  │        │          │ • created_at                         │     │  │
+                  │        │          └───────┬─────────┬────────────────────┘     │  │
+                  │        │                  │         │                          │  │
+                  │        │                  │         │                          │  │
+                  │ (M:N)  │ (M:N)            │ (M:N)   │ (M:N)                    │  │
+                  │        │                  │         │                          │  │
+                  │  ┌─────▼──────────┐  ┌────▼─────────▼─────┐                   │  │
+                  │  │   WAITLIST     │  │   ENROLLMENTS      │                   │  │
+                  └──┤   (Assoc)      │  │   (Associative)    │◄──────────────────┘  │
+                     ├────────────────┤  ├────────────────────┤                      │
+                     │ PK: waitlist_id│  │ PK: enrollment_id  │◄─────────────────────┘
+                     │ FK: student_id │  │ FK: student_id     │
+                     │ FK: offering_id│  │ FK: offering_id    │
+                     │ • position     │  │ • enrollment_date  │
+                     │ • status       │  │ • status           │
+                     │ • joined_date  │  │ • grade            │
+                     └────────────────┘  │ • grade_points     │
+                                         │ • created_at       │
+                                         │ • updated_at       │
+                                         └────────────────────┘
+
+
+                              ┌────────────────────────────┐
+                              │        ADMINS              │ (Independent Entity)
+                              ├────────────────────────────┤
+                              │ PK: admin_id               │
+                              │ UK: email                  │
+                              │ • full_name                │
+                              │ • password_hash            │
+                              │ • role                     │
+                              │ • created_at               │
+                              └────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                    LEGEND & NOTATION                                                 ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  PK: Primary Key        │  UK: Unique Key       │  FK: Foreign Key       │  •: Regular Attribute    ║
+║  (1:N): One-to-Many     │  (M:N): Many-to-Many  │  ────: Relationship    │  (self-ref): Recursive   ║
+║  (Assoc): Associative Entity (Junction Table for M:N relationships)                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                  RELATIONSHIP DETAILS                                                ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  1. DEPARTMENTS (1) ──has──> (N) STUDENTS                                                           ║
+║     • One department can have many students                                                          ║
+║     • Each student belongs to exactly one department                                                 ║
+║                                                                                                       ║
+║  2. DEPARTMENTS (1) ──offers──> (N) COURSES                                                         ║
+║     • One department offers many courses                                                             ║
+║     • Each course belongs to exactly one department                                                  ║
+║                                                                                                       ║
+║  3. DEPARTMENTS (1) ──employs──> (N) INSTRUCTORS                                                    ║
+║     • One department employs many instructors                                                        ║
+║     • Each instructor belongs to exactly one department                                              ║
+║                                                                                                       ║
+║  4. COURSES (1) ──has_prerequisite──> (N) COURSES  [RECURSIVE]                                     ║
+║     • A course can have one prerequisite course                                                      ║
+║     • A course can be a prerequisite for many other courses                                          ║
+║                                                                                                       ║
+║  5. COURSES (1) ──creates──> (N) COURSE_OFFERINGS                                                   ║
+║     • One course can have many offerings (different sections/semesters)                             ║
+║     • Each offering is for exactly one course                                                        ║
+║                                                                                                       ║
+║  6. SEMESTERS (1) ──schedules──> (N) COURSE_OFFERINGS                                               ║
+║     • One semester can schedule many course offerings                                                ║
+║     • Each offering is scheduled in exactly one semester                                             ║
+║                                                                                                       ║
+║  7. INSTRUCTORS (1) ──teaches──> (N) COURSE_OFFERINGS                                               ║
+║     • One instructor can teach many course offerings                                                 ║
+║     • Each offering is taught by exactly one instructor                                              ║
+║                                                                                                       ║
+║  8. STUDENTS (M) ──enrolls_in──> (N) COURSE_OFFERINGS  [via ENROLLMENTS]                          ║
+║     • A student can enroll in many course offerings                                                  ║
+║     • A course offering can have many students enrolled                                              ║
+║     • ENROLLMENTS stores: enrollment_date, status, grade, grade_points                              ║
+║                                                                                                       ║
+║  9. STUDENTS (M) ──waits_for──> (N) COURSE_OFFERINGS  [via WAITLIST]                              ║
+║     • A student can be on waitlist for many course offerings                                         ║
+║     • A course offering can have many students on waitlist                                           ║
+║     • WAITLIST stores: position, status, joined_date                                                ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                  KEY CONSTRAINTS                                                     ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  PRIMARY KEYS:                                                                                        ║
+║    • Each entity has a surrogate integer key (auto-increment)                                        ║
+║    • Ensures unique identification of every record                                                   ║
+║                                                                                                       ║
+║  UNIQUE CONSTRAINTS:                                                                                  ║
+║    • student_number, email (STUDENTS)                                                                ║
+║    • course_code (COURSES)                                                                           ║
+║    • instructor_number, email (INSTRUCTORS)                                                          ║
+║    • department_code (DEPARTMENTS)                                                                   ║
+║    • Prevents duplicate entries                                                                      ║
+║                                                                                                       ║
+║  FOREIGN KEY CONSTRAINTS:                                                                             ║
+║    • All FKs have ON DELETE CASCADE and ON UPDATE CASCADE                                           ║
+║    • Maintains referential integrity                                                                 ║
+║    • Automatically handles related records                                                           ║
+║                                                                                                       ║
+║  CHECK CONSTRAINTS:                                                                                   ║
+║    • credits > 0                                                                                     ║
+║    • max_capacity > 0                                                                                ║
+║    • enrolled_count >= 0                                                                             ║
+║    • gpa BETWEEN 0.00 AND 4.00                                                                       ║
+║                                                                                                       ║
+║  ENUM CONSTRAINTS:                                                                                    ║
+║    • status fields: Limited to predefined values                                                     ║
+║    • gender: Male, Female, Other                                                                     ║
+║    • Ensures data consistency                                                                        ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                  DATABASE TRIGGERS                                                   ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  1. after_enrollment_insert                                                                           ║
+║     • Fires AFTER INSERT on ENROLLMENTS                                                              ║
+║     • Increments enrolled_count in COURSE_OFFERINGS when status is 'ENROLLED'                       ║
+║                                                                                                       ║
+║  2. after_enrollment_update                                                                           ║
+║     • Fires AFTER UPDATE on ENROLLMENTS                                                              ║
+║     • Updates enrolled_count when enrollment status changes                                          ║
+║     • Handles ENROLLED, DROPPED, WITHDRAWN transitions                                               ║
+║                                                                                                       ║
+║  3. before_enrollment_insert                                                                          ║
+║     • Fires BEFORE INSERT on ENROLLMENTS                                                             ║
+║     • Validates that enrolled_count < max_capacity                                                   ║
+║     • Prevents over-enrollment                                                                       ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                  DATABASE VIEWS                                                      ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  1. student_enrollment_summary                                                                        ║
+║     • Shows student enrollment statistics                                                            ║
+║     • Aggregates: total enrollments, current enrollments, completed courses                         ║
+║                                                                                                       ║
+║  2. course_offerings_detail                                                                           ║
+║     • Combines COURSE_OFFERINGS with COURSES, INSTRUCTORS, SEMESTERS                                ║
+║     • Provides complete offering information in one view                                             ║
+║                                                                                                       ║
+║  3. enrollment_details                                                                                ║
+║     • Combines ENROLLMENTS with STUDENTS, COURSE_OFFERINGS, COURSES                                 ║
+║     • Shows full enrollment information for reporting                                                ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                              NORMALIZATION STATUS: 3NF ✓                                            ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  • First Normal Form (1NF): All attributes are atomic ✓                                             ║
+║  • Second Normal Form (2NF): No partial dependencies ✓                                              ║
+║  • Third Normal Form (3NF): No transitive dependencies ✓                                            ║
+║                                                                                                       ║
+║  Exception: enrolled_count in COURSE_OFFERINGS (denormalized for performance)                       ║
+║  • Maintained automatically via triggers                                                             ║
+║  • Trade-off: Write performance for read performance                                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                  INDEXES (Performance)                                               ║
+╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║  • Primary Key Indexes: Auto-created on all PK columns                                              ║
+║  • Foreign Key Indexes: Auto-created on all FK columns                                              ║
+║  • Unique Indexes: Auto-created on all UK columns                                                   ║
+║  • Additional Indexes: Created on frequently queried columns                                         ║
+║    - STUDENTS.email, STUDENTS.student_number                                                         ║
+║    - COURSES.course_code                                                                             ║
+║    - ENROLLMENTS.status                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════
+                          END OF ER DIAGRAM - ONLINE COURSE REGISTRATION SYSTEM
+═══════════════════════════════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ER Diagram - Online Course Registration System</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #3498db;
+        }
+
+        .tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .entity-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .entity-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .entity-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .entity-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .entity-card li {
+            padding: 5px 0;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .pk { color: #e74c3c; font-weight: bold; }
+        .fk { color: #3498db; font-weight: bold; }
+        .uk { color: #f39c12; font-weight: bold; }
+
+        .relationships-list {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .relationships-list h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .relationships-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ffe082;
+        }
+
+        .relationships-list li:last-child {
+            border-bottom: none;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .entities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Entity-Relationship Diagram</h1>
+        <p class="subtitle">Online Course Registration System</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('diagram')">📐 ER Diagram</button>
+            <button class="tab" onclick="showTab('entities')">🗂️ Entities</button>
+            <button class="tab" onclick="showTab('relationships')">🔗 Relationships</button>
+            <button class="tab" onclick="showTab('info')">ℹ️ Information</button>
+        </div>
+
+        <!-- Diagram Tab -->
+        <div id="diagram" class="content active">
+            <div class="info-box">
+                <h3>Interactive ER Diagram</h3>
+                <p>This diagram shows the complete database structure with all entities and their relationships. The diagram is generated using Mermaid and is fully interactive.</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="mermaid">
+erDiagram
+    DEPARTMENTS ||--o{ STUDENTS : "has"
+    DEPARTMENTS ||--o{ COURSES : "offers"
+    DEPARTMENTS ||--o{ INSTRUCTORS : "employs"
+    
+    STUDENTS ||--o{ ENROLLMENTS : "makes"
+    STUDENTS ||--o{ WAITLIST : "joins"
+    
+    COURSES ||--o{ COURSE_OFFERINGS : "has"
+    COURSES ||--o| COURSES : "prerequisite"
+    
+    INSTRUCTORS ||--o{ COURSE_OFFERINGS : "teaches"
+    
+    SEMESTERS ||--o{ COURSE_OFFERINGS : "schedules"
+    
+    COURSE_OFFERINGS ||--o{ ENROLLMENTS : "receives"
+    COURSE_OFFERINGS ||--o{ WAITLIST : "maintains"
+    
+    STUDENTS {
+        int student_id PK
+        string student_number UK
+        string first_name
+        string last_name
+        string email UK
+        string password_hash
+        int department_id FK
+        int enrollment_year
+        decimal gpa
+        enum status
+    }
+    
+    COURSES {
+        int course_id PK
+        string course_code UK
+        string course_name
+        text description
+        int credits
+        int department_id FK
+        int prerequisite_id FK
+    }
+    
+    INSTRUCTORS {
+        int instructor_id PK
+        string instructor_number UK
+        string first_name
+        string last_name
+        string email UK
+        int department_id FK
+    }
+    
+    DEPARTMENTS {
+        int department_id PK
+        string department_code UK
+        string department_name
+        string building
+    }
+    
+    SEMESTERS {
+        int semester_id PK
+        string semester_name
+        string academic_year
+        date start_date
+        date end_date
+        boolean is_current
+    }
+    
+    COURSE_OFFERINGS {
+        int offering_id PK
+        int course_id FK
+        int semester_id FK
+        int instructor_id FK
+        int max_capacity
+        int enrolled_count
+        string schedule_days
+        enum status
+    }
+    
+    ENROLLMENTS {
+        int enrollment_id PK
+        int student_id FK
+        int offering_id FK
+        timestamp enrollment_date
+        enum status
+        string grade
+    }
+    
+    WAITLIST {
+        int waitlist_id PK
+        int student_id FK
+        int offering_id FK
+        int position
+        enum status
+    }
+    
+    ADMINS {
+        int admin_id PK
+        string full_name
+        string email UK
+        string password_hash
+        enum role
+    }
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="pk">PK</span> = Primary Key
+                </div>
+                <div class="legend-item">
+                    <span class="fk">FK</span> = Foreign Key
+                </div>
+                <div class="legend-item">
+                    <span class="uk">UK</span> = Unique Key
+                </div>
+                <div class="legend-item">
+                    <strong>||--o{</strong> = One-to-Many
+                </div>
+                <div class="legend-item">
+                    <strong>||--||</strong> = One-to-One
+                </div>
+            </div>
+        </div>
+
+        <!-- Entities Tab -->
+        <div id="entities" class="content">
+            <div class="info-box">
+                <h3>Database Entities (Tables)</h3>
+                <p>The system consists of 9 main entities. Each card shows the entity name and its key attributes.</p>
+            </div>
+
+            <div class="entities-grid">
+                <div class="entity-card">
+                    <h4>👥 STUDENTS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> student_id</li>
+                        <li><span class="uk">UK:</span> student_number, email</li>
+                        <li><span class="fk">FK:</span> department_id</li>
+                        <li>• first_name, last_name</li>
+                        <li>• password_hash, phone</li>
+                        <li>• gpa, status, created_at</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📚 COURSES</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> course_id</li>
+                        <li><span class="uk">UK:</span> course_code</li>
+                        <li><span class="fk">FK:</span> department_id</li>
+                        <li><span class="fk">FK:</span> prerequisite_course_id</li>
+                        <li>• course_name, description</li>
+                        <li>• credits</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>👨‍🏫 INSTRUCTORS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> instructor_id</li>
+                        <li><span class="uk">UK:</span> instructor_number, email</li>
+                        <li><span class="fk">FK:</span> department_id</li>
+                        <li>• first_name, last_name</li>
+                        <li>• phone, office_location</li>
+                        <li>• status</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🏛️ DEPARTMENTS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> department_id</li>
+                        <li><span class="uk">UK:</span> department_code</li>
+                        <li>• department_name</li>
+                        <li>• building</li>
+                        <li>• contact_email, contact_phone</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📅 SEMESTERS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> semester_id</li>
+                        <li>• semester_name</li>
+                        <li>• academic_year</li>
+                        <li>• start_date, end_date</li>
+                        <li>• registration_start/end</li>
+                        <li>• is_current</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🎓 COURSE_OFFERINGS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> offering_id</li>
+                        <li><span class="fk">FK:</span> course_id</li>
+                        <li><span class="fk">FK:</span> semester_id</li>
+                        <li><span class="fk">FK:</span> instructor_id</li>
+                        <li>• section_number, max_capacity</li>
+                        <li>• enrolled_count, schedule</li>
+                        <li>• classroom, status</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📝 ENROLLMENTS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> enrollment_id</li>
+                        <li><span class="fk">FK:</span> student_id</li>
+                        <li><span class="fk">FK:</span> offering_id</li>
+                        <li>• enrollment_date</li>
+                        <li>• status (ENROLLED/DROPPED)</li>
+                        <li>• grade, grade_points</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>⏳ WAITLIST</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> waitlist_id</li>
+                        <li><span class="fk">FK:</span> student_id</li>
+                        <li><span class="fk">FK:</span> offering_id</li>
+                        <li>• position</li>
+                        <li>• status</li>
+                        <li>• joined_date</li>
+                    </ul>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🔐 ADMINS</h4>
+                    <ul>
+                        <li><span class="pk">PK:</span> admin_id</li>
+                        <li><span class="uk">UK:</span> email</li>
+                        <li>• full_name</li>
+                        <li>• password_hash</li>
+                        <li>• role (SUPER_ADMIN/STAFF)</li>
+                        <li>• created_at</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationships Tab -->
+        <div id="relationships" class="content">
+            <div class="info-box">
+                <h3>Entity Relationships</h3>
+                <p>This section describes all the relationships between entities in the database.</p>
+            </div>
+
+            <div class="relationships-list">
+                <h3>🔗 Key Relationships</h3>
+                <ul>
+                    <li><strong>DEPARTMENTS → STUDENTS</strong> (1:N) - A department can have many students</li>
+                    <li><strong>DEPARTMENTS → COURSES</strong> (1:N) - A department offers many courses</li>
+                    <li><strong>DEPARTMENTS → INSTRUCTORS</strong> (1:N) - A department employs many instructors</li>
+                    <li><strong>COURSES → COURSES</strong> (1:N, Recursive) - A course can have one prerequisite</li>
+                    <li><strong>COURSES → COURSE_OFFERINGS</strong> (1:N) - A course has many sections/offerings</li>
+                    <li><strong>SEMESTERS → COURSE_OFFERINGS</strong> (1:N) - A semester schedules many offerings</li>
+                    <li><strong>INSTRUCTORS → COURSE_OFFERINGS</strong> (1:N) - An instructor teaches many sections</li>
+                    <li><strong>STUDENTS ↔ COURSE_OFFERINGS</strong> (M:N via ENROLLMENTS) - Many-to-many enrollment</li>
+                    <li><strong>STUDENTS ↔ COURSE_OFFERINGS</strong> (M:N via WAITLIST) - Many-to-many waitlist</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>📊 Cardinality Explained</h3>
+                <ul>
+                    <li><strong>1:1 (One-to-One):</strong> One entity instance relates to exactly one instance of another</li>
+                    <li><strong>1:N (One-to-Many):</strong> One entity instance relates to many instances of another</li>
+                    <li><strong>M:N (Many-to-Many):</strong> Many instances relate to many instances (requires junction table)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Information Tab -->
+        <div id="info" class="content">
+            <div class="info-box">
+                <h3>📊 Database Statistics</h3>
+                <ul>
+                    <li><strong>Total Tables:</strong> 9</li>
+                    <li><strong>Strong Entities:</strong> 6 (STUDENTS, COURSES, INSTRUCTORS, DEPARTMENTS, SEMESTERS, ADMINS)</li>
+                    <li><strong>Weak Entities:</strong> 1 (COURSE_OFFERINGS)</li>
+                    <li><strong>Associative Entities:</strong> 2 (ENROLLMENTS, WAITLIST)</li>
+                    <li><strong>Total Relationships:</strong> 9</li>
+                    <li><strong>Foreign Keys:</strong> 11</li>
+                    <li><strong>Unique Constraints:</strong> 8</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🎯 Normalization Status</h3>
+                <p><strong>✅ Third Normal Form (3NF) Compliant</strong></p>
+                <ul>
+                    <li><strong>1NF:</strong> All attributes are atomic (no multi-valued attributes)</li>
+                    <li><strong>2NF:</strong> No partial dependencies on composite keys</li>
+                    <li><strong>3NF:</strong> No transitive dependencies</li>
+                </ul>
+                <p><em>Exception: enrolled_count in COURSE_OFFERINGS is denormalized for performance, maintained via triggers.</em></p>
+            </div>
+
+            <div class="info-box">
+                <h3>🔧 Database Features</h3>
+                <ul>
+                    <li><strong>Triggers:</strong> 3 (after_enrollment_insert, after_enrollment_update, before_enrollment_insert)</li>
+                    <li><strong>Views:</strong> 3 (student_enrollment_summary, course_offerings_detail, enrollment_details)</li>
+                    <li><strong>Indexes:</strong> Automatic on all PKs, FKs, and UKs + custom indexes</li>
+                    <li><strong>Constraints:</strong> CHECK, UNIQUE, NOT NULL, FOREIGN KEY</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>📁 More Documentation</h3>
+                <p>For detailed information, refer to these files in the project:</p>
+                <ul>
+                    <li><strong>ER_DIAGRAM.md</strong> - Complete ER diagram with Mermaid syntax</li>
+                    <li><strong>ER_DIAGRAM_ASCII.txt</strong> - Text-based ER diagram</li>
+                    <li><strong>docs/DATABASE_DESIGN.md</strong> - Full database design documentation</li>
+                    <li><strong>docs/NORMALIZATION.md</strong> - Normalization analysis and proof</li>
+                    <li><strong>README.md</strong> - Main project documentation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#7f8c8d',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#f8f9fa'
+            }
+        });
+
+        function showTab(tabName) {
+            // Hide all content
+            const contents = document.querySelectorAll('.content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
