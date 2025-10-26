@@ -456,4 +456,3 @@ For issues or questions:
 
 ---
 
-**Made with ❤️ for DBMS Mini Project**
