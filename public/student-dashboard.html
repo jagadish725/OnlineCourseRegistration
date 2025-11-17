@@ -171,7 +171,7 @@
         // Load departments for filter
         async function loadDepartments() {
             try {
-                const response = await fetch('/api/courses/departments/list');
+                const response = await fetch('/api/courses/public/departments');
                 const data = await response.json();
 
                 if (data.success) {

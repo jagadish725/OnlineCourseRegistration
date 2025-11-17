@@ -116,8 +116,8 @@ router.get('/:offeringId', isAuthenticated, async (req, res) => {
     }
 });
 
-// Get all departments
-router.get('/departments/list', isAuthenticated, async (req, res) => {
+// Get all departments (public) - allow listing without authentication so registration & public pages can load departments
+router.get('/departments/list', async (req, res) => {
     try {
         const [departments] = await pool.query(
             'SELECT * FROM departments ORDER BY department_name'
@@ -129,6 +129,27 @@ router.get('/departments/list', isAuthenticated, async (req, res) => {
         });
     } catch (error) {
         console.error('Get departments error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch departments',
+            error: error.message
+        });
+    }
+});
+
+// Public departments endpoint (explicit public namespace)
+router.get('/public/departments', async (req, res) => {
+    try {
+        const [departments] = await pool.query(
+            'SELECT * FROM departments ORDER BY department_name'
+        );
+
+        res.json({
+            success: true,
+            departments
+        });
+    } catch (error) {
+        console.error('Get public departments error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to fetch departments',

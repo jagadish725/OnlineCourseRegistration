@@ -157,6 +157,34 @@ router.post('/student/register', async (req, res) => {
             });
         }
 
+        // Server-side DOB validation: ensure age >= 18
+        if (!dateOfBirth) {
+            return res.status(400).json({ success: false, message: 'Date of birth is required' });
+        }
+        const dobParsed = new Date(dateOfBirth);
+        if (isNaN(dobParsed.getTime())) {
+            return res.status(400).json({ success: false, message: 'Invalid date of birth' });
+        }
+        const todayForAge = new Date();
+        let age = todayForAge.getFullYear() - dobParsed.getFullYear();
+        const monthDiff = todayForAge.getMonth() - dobParsed.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && todayForAge.getDate() < dobParsed.getDate())) {
+            age--;
+        }
+        if (age < 18) {
+            return res.status(400).json({ success: false, message: 'Must be at least 18 years old to register' });
+        }
+
+        // Server-side phone normalization/validation: digits only, max 10
+        let phoneClean = null;
+        if (phone) {
+            const digits = String(phone).replace(/\D/g, '');
+            if (digits.length > 10) {
+                return res.status(400).json({ success: false, message: 'Phone number must be at most 10 digits' });
+            }
+            phoneClean = digits.length === 0 ? null : digits;
+        }
+
         // Check if email already exists
         const [existing] = await pool.query(
             'SELECT * FROM students WHERE email = ? OR student_number = ?',
@@ -179,7 +207,7 @@ router.post('/student/register', async (req, res) => {
             (student_number, first_name, last_name, email, password_hash, phone, 
              date_of_birth, gender, address, department_id, enrollment_year, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE')`,
-            [studentNumber, firstName, lastName, email, passwordHash, phone,
+            [studentNumber, firstName, lastName, email, passwordHash, phoneClean,
              dateOfBirth, gender, address, departmentId, enrollmentYear]
         );
 

@@ -88,7 +88,7 @@
 
                     <div class="form-group">
                         <label for="regPhone">Phone</label>
-                        <input type="tel" id="regPhone" placeholder="555-1234">
+                        <input type="tel" id="regPhone" placeholder="555-1234" maxlength="10" inputmode="numeric" pattern="[0-9]{0,10}" title="Up to 10 digits" />
                     </div>
 
                     <div class="form-row">
@@ -261,6 +261,15 @@
             document.getElementById('studentRegisterForm').style.display = 'block';
             hideAlert();
             loadDepartments();
+            // Set max DOB to ensure age > 17 (i.e., at least 18 years old)
+            const dobInput = document.getElementById('regDOB');
+            if (dobInput) {
+                const today = new Date();
+                const year = today.getFullYear() - 18; // allow 18 years and older
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dobInput.max = `${year}-${month}-${day}`;
+            }
         }
 
         function showLoginForm() {
@@ -272,7 +281,7 @@
         // Load Departments
         async function loadDepartments() {
             try {
-                const response = await fetch('/api/courses/departments/list');
+                const response = await fetch('/api/courses/public/departments');
                 const data = await response.json();
 
                 if (data.success) {
@@ -307,6 +316,34 @@
                 departmentId: document.getElementById('regDepartment').value,
                 enrollmentYear: parseInt(document.getElementById('regYear').value)
             };
+
+            // Normalize and validate phone: allow up to 10 digits
+            if (formData.phone) {
+                const digits = formData.phone.replace(/\D/g, '');
+                if (digits.length > 10) {
+                    showAlert('Phone number must be at most 10 digits.', 'danger');
+                    return;
+                }
+                formData.phone = digits.length === 0 ? null : digits;
+            }
+
+            // Client-side DOB validation: require age >= 18
+            if (formData.dateOfBirth) {
+                const dob = new Date(formData.dateOfBirth);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                if (age < 18) {
+                    showAlert('You must be at least 18 years old to register.', 'danger');
+                    return;
+                }
+            } else {
+                showAlert('Please enter your date of birth.', 'danger');
+                return;
+            }
 
             // Validation
             if (!formData.departmentId) {
@@ -359,6 +396,29 @@
         }
 
         checkSession();
+
+        // Ensure regPhone contains digits only (strip non-digits on input/paste)
+        (function() {
+            const phoneInput = document.getElementById('regPhone');
+            if (!phoneInput) return;
+
+            phoneInput.addEventListener('input', (e) => {
+                const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
+                if (e.target.value !== cleaned) e.target.value = cleaned;
+            });
+
+            phoneInput.addEventListener('paste', (e) => {
+                const paste = (e.clipboardData || window.clipboardData).getData('text');
+                if (!paste) return;
+                const cleaned = paste.replace(/\D/g, '').slice(0, 10);
+                e.preventDefault();
+                const start = phoneInput.selectionStart || 0;
+                const end = phoneInput.selectionEnd || 0;
+                const val = phoneInput.value;
+                const newVal = (val.slice(0, start) + cleaned + val.slice(end)).replace(/\D/g, '').slice(0, 10);
+                phoneInput.value = newVal;
+            });
+        })();
     </script>
 </body>
 </html>
