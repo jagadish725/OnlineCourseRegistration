@@ -68,7 +68,7 @@ async function loadDepartments() {
 
 // Populate department dropdowns
 function populateDepartmentSelects() {
-    const selects = ['courseDepartment', 'instructorDepartment'];
+    const selects = ['studentDepartment', 'courseDepartment', 'instructorDepartment'];
     
     selects.forEach(selectId => {
         const select = document.getElementById(selectId);
@@ -130,6 +130,9 @@ async function loadStudents() {
 
         if (data.success && data.students && data.students.length > 0) {
             container.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <button class="btn btn-success" onclick="showAddStudentModal()">➕ Add Student</button>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -152,6 +155,10 @@ async function loadStudents() {
                                 <td>${s.gpa != null ? Number(s.gpa).toFixed(2) : '0.00'}</td>
                                 <td><span class="badge badge-${s.status === 'ACTIVE' ? 'success' : 'warning'}">${s.status}</span></td>
                                 <td>
+                                    ${s.status === 'ACTIVE' 
+                                        ? `<button class="btn btn-warning btn-sm" onclick="toggleStudentStatus(${s.student_id}, 'INACTIVE')">Deactivate</button>`
+                                        : `<button class="btn btn-success btn-sm" onclick="toggleStudentStatus(${s.student_id}, 'ACTIVE')">Activate</button>`
+                                    }
                                     <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.student_id})">Delete</button>
                                 </td>
                             </tr>
@@ -160,7 +167,12 @@ async function loadStudents() {
                 </table>
             `;
         } else {
-            container.innerHTML = '<p>No students found. Click "Refresh" to reload.</p>';
+            container.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <button class="btn btn-success" onclick="showAddStudentModal()">➕ Add Student</button>
+                </div>
+                <p>No students found. Click "Refresh" to reload.</p>
+            `;
         }
     } catch (error) {
         console.error('Load students error:', error);
@@ -170,6 +182,81 @@ async function loadStudents() {
             <small>Check console for details. Make sure you're logged in as admin.</small><br>
             <button class="btn btn-primary" onclick="loadStudents()">Try Again</button>
         </div>`;
+    }
+}
+
+// Show add student modal
+function showAddStudentModal() {
+    document.getElementById('addStudentModal').classList.add('show');
+}
+
+// Add student form submission
+document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        studentNumber: formData.get('studentNumber'),
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        phone: formData.get('phone') || null,
+        dateOfBirth: formData.get('dateOfBirth') || null,
+        gender: formData.get('gender') || null,
+        address: formData.get('address') || null,
+        departmentId: parseInt(formData.get('departmentId')),
+        enrollmentYear: parseInt(formData.get('enrollmentYear'))
+    };
+
+    try {
+        const response = await fetch('/api/admin/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showAlert('Student added successfully', 'success');
+            closeModal('addStudentModal');
+            e.target.reset();
+            loadStudents();
+            loadDashboardStats();
+        } else {
+            showAlert(result.message || 'Failed to add student');
+        }
+    } catch (error) {
+        console.error('Add student error:', error);
+        showAlert('Failed to add student');
+    }
+});
+
+// Toggle student status (activate/deactivate)
+async function toggleStudentStatus(studentId, newStatus) {
+    const action = newStatus === 'ACTIVE' ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${action} this student?`)) return;
+
+    try {
+        const response = await fetch(`/api/admin/students/${studentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert(`Student ${action}d successfully`, 'success');
+            loadStudents();
+            loadDashboardStats();
+        } else {
+            showAlert(data.message || `Failed to ${action} student`);
+        }
+    } catch (error) {
+        console.error(`Toggle student status error:`, error);
+        showAlert(`Failed to ${action} student`);
     }
 }
 

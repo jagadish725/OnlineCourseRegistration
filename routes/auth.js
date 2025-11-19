@@ -226,6 +226,82 @@ router.post('/student/register', async (req, res) => {
     }
 });
 
+// Admin Registration
+router.post('/admin/register', async (req, res) => {
+    try {
+        const {
+            fullName,
+            username,
+            email,
+            password,
+            phone,
+            role
+        } = req.body;
+
+        // Validate required fields
+        if (!fullName || !username || !email || !password || !role) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Validate role
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid role'
+            });
+        }
+
+        // Server-side phone normalization/validation: digits only, max 10
+        let phoneClean = null;
+        if (phone) {
+            const digits = String(phone).replace(/\D/g, '');
+            if (digits.length > 10) {
+                return res.status(400).json({ success: false, message: 'Phone number must be at most 10 digits' });
+            }
+            phoneClean = digits.length === 0 ? null : digits;
+        }
+
+        // Check if email or username already exists
+        const [existing] = await pool.query(
+            'SELECT * FROM admins WHERE email = ? OR username = ?',
+            [email, username]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email or username already registered'
+            });
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Insert admin
+        const [result] = await pool.query(
+            `INSERT INTO admins (username, full_name, email, password_hash, phone, role)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [username, fullName, email, passwordHash, phoneClean, role]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Admin registration successful',
+            adminId: result.insertId
+        });
+    } catch (error) {
+        console.error('Admin registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Admin registration failed',
+            error: error.message
+        });
+    }
+});
+
 // Logout
 router.post('/logout', (req, res) => {
     req.session.destroy((err) => {

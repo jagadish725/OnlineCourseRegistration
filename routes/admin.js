@@ -67,12 +67,30 @@ router.put('/students/:id', isAuthenticated, isAdmin, async (req, res) => {
     try {
         const { firstName, lastName, phone, address, status, gpa, currentSemester } = req.body;
 
+        // Build dynamic update query based on provided fields
+        const updates = [];
+        const values = [];
+
+        if (firstName !== undefined) { updates.push('first_name = ?'); values.push(firstName); }
+        if (lastName !== undefined) { updates.push('last_name = ?'); values.push(lastName); }
+        if (phone !== undefined) { updates.push('phone = ?'); values.push(phone); }
+        if (address !== undefined) { updates.push('address = ?'); values.push(address); }
+        if (status !== undefined) { updates.push('status = ?'); values.push(status); }
+        if (gpa !== undefined) { updates.push('gpa = ?'); values.push(gpa); }
+        if (currentSemester !== undefined) { updates.push('current_semester = ?'); values.push(currentSemester); }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No fields to update'
+            });
+        }
+
+        values.push(req.params.id);
+
         await pool.query(
-            `UPDATE students 
-             SET first_name = ?, last_name = ?, phone = ?, address = ?,
-                 status = ?, gpa = ?, current_semester = ?
-             WHERE student_id = ?`,
-            [firstName, lastName, phone, address, status, gpa, currentSemester, req.params.id]
+            `UPDATE students SET ${updates.join(', ')} WHERE student_id = ?`,
+            values
         );
 
         res.json({

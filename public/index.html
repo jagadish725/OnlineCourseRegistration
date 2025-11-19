@@ -10,7 +10,7 @@
     <div class="login-container">
         <div class="login-box">
             <div class="login-left">
-                <h1>📚 Course Registration</h1>
+                <h1>📚 Online Course Registration System</h1>
                 <p>Welcome to the Online Course Registration System. Manage your academic journey with ease. Enroll in courses, view your schedule, and track your progress all in one place.</p>
                 <br>
                 <p><strong>Features:</strong></p>
@@ -147,8 +147,57 @@
 
                     <button type="submit" class="btn btn-primary">Login</button>
 
-                    <p style="text-align: center; margin-top: 20px; color: #7f8c8d;">
+                    <p style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                        <small>Need an account? <a href="#" onclick="showAdminRegisterForm(); return false;" style="color: #3498db; text-decoration: underline;">Register here</a></small>
+                    </p>
+
+                    <p style="text-align: center; margin-top: 10px; color: #7f8c8d;">
                         <small>Demo: admin@university.edu / admin123</small>
+                    </p>
+                </form>
+
+                <!-- Admin Registration Form -->
+                <form id="adminRegisterForm" class="login-form" style="display: none;">
+                    <h2 style="margin-bottom: 20px; color: #2c3e50;">Admin Registration</h2>
+                    
+                    <div class="form-group">
+                        <label for="regAdminName">Full Name *</label>
+                        <input type="text" id="regAdminName" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAdminUsername">Username *</label>
+                        <input type="text" id="regAdminUsername" placeholder="johndoe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAdminEmail">Email *</label>
+                        <input type="email" id="regAdminEmail" placeholder="admin@university.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAdminPassword">Password *</label>
+                        <input type="password" id="regAdminPassword" placeholder="Minimum 6 characters" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAdminPhone">Phone</label>
+                        <input type="tel" id="regAdminPhone" placeholder="555-1234" maxlength="10" inputmode="numeric" pattern="[0-9]{0,10}" title="Up to 10 digits" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regAdminRole">Role *</label>
+                        <select id="regAdminRole" required>
+                            <option value="">Select Role</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="SUPER_ADMIN">Super Admin</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Register</button>
+
+                    <p style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                        <small>Already have an account? <a href="#" onclick="showAdminLoginForm(); return false;" style="color: #3498db; text-decoration: underline;">Login here</a></small>
                     </p>
                 </form>
             </div>
@@ -158,19 +207,27 @@
     <script>
         // Tab switching
         function switchTab(tab) {
-            const studentForm = document.getElementById('studentLoginForm');
-            const adminForm = document.getElementById('adminLoginForm');
+            const studentLoginForm = document.getElementById('studentLoginForm');
+            const studentRegisterForm = document.getElementById('studentRegisterForm');
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            const adminRegisterForm = document.getElementById('adminRegisterForm');
             const tabButtons = document.querySelectorAll('.tab-btn');
 
             tabButtons.forEach(btn => btn.classList.remove('active'));
 
+            // Hide all forms
+            studentLoginForm.style.display = 'none';
+            studentRegisterForm.style.display = 'none';
+            adminLoginForm.style.display = 'none';
+            adminRegisterForm.style.display = 'none';
+
             if (tab === 'student') {
-                studentForm.classList.add('active');
-                adminForm.classList.remove('active');
+                studentLoginForm.classList.add('active');
+                studentLoginForm.style.display = 'block';
                 tabButtons[0].classList.add('active');
             } else {
-                adminForm.classList.add('active');
-                studentForm.classList.remove('active');
+                adminLoginForm.classList.add('active');
+                adminLoginForm.style.display = 'block';
                 tabButtons[1].classList.add('active');
             }
 
@@ -255,6 +312,61 @@
             }
         });
 
+        // Admin Registration
+        document.getElementById('adminRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                fullName: document.getElementById('regAdminName').value.trim(),
+                username: document.getElementById('regAdminUsername').value.trim(),
+                email: document.getElementById('regAdminEmail').value.trim(),
+                password: document.getElementById('regAdminPassword').value,
+                phone: document.getElementById('regAdminPhone').value.trim() || null,
+                role: document.getElementById('regAdminRole').value
+            };
+
+            // Normalize phone: digits only
+            if (formData.phone) {
+                const digits = formData.phone.replace(/\D/g, '');
+                if (digits.length > 10) {
+                    showAlert('Phone number must be at most 10 digits.', 'danger');
+                    return;
+                }
+                formData.phone = digits.length === 0 ? null : digits;
+            }
+
+            // Validation
+            if (!formData.role) {
+                showAlert('Please select a role', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/admin/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Admin registration successful! Please login with your credentials.', 'success');
+                    setTimeout(() => {
+                        showAdminLoginForm();
+                        document.getElementById('adminEmail').value = formData.email;
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                showAlert('An error occurred. Please try again.');
+                console.error('Admin registration error:', error);
+            }
+        });
+
         // Show/Hide Registration Form
         function showRegisterForm() {
             document.getElementById('studentLoginForm').style.display = 'none';
@@ -275,6 +387,18 @@
         function showLoginForm() {
             document.getElementById('studentLoginForm').style.display = 'block';
             document.getElementById('studentRegisterForm').style.display = 'none';
+            hideAlert();
+        }
+
+        function showAdminRegisterForm() {
+            document.getElementById('adminLoginForm').style.display = 'none';
+            document.getElementById('adminRegisterForm').style.display = 'block';
+            hideAlert();
+        }
+
+        function showAdminLoginForm() {
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminRegisterForm').style.display = 'none';
             hideAlert();
         }
 
@@ -400,24 +524,45 @@
         // Ensure regPhone contains digits only (strip non-digits on input/paste)
         (function() {
             const phoneInput = document.getElementById('regPhone');
-            if (!phoneInput) return;
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    if (e.target.value !== cleaned) e.target.value = cleaned;
+                });
 
-            phoneInput.addEventListener('input', (e) => {
-                const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
-                if (e.target.value !== cleaned) e.target.value = cleaned;
-            });
+                phoneInput.addEventListener('paste', (e) => {
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    if (!paste) return;
+                    const cleaned = paste.replace(/\D/g, '').slice(0, 10);
+                    e.preventDefault();
+                    const start = phoneInput.selectionStart || 0;
+                    const end = phoneInput.selectionEnd || 0;
+                    const val = phoneInput.value;
+                    const newVal = (val.slice(0, start) + cleaned + val.slice(end)).replace(/\D/g, '').slice(0, 10);
+                    phoneInput.value = newVal;
+                });
+            }
 
-            phoneInput.addEventListener('paste', (e) => {
-                const paste = (e.clipboardData || window.clipboardData).getData('text');
-                if (!paste) return;
-                const cleaned = paste.replace(/\D/g, '').slice(0, 10);
-                e.preventDefault();
-                const start = phoneInput.selectionStart || 0;
-                const end = phoneInput.selectionEnd || 0;
-                const val = phoneInput.value;
-                const newVal = (val.slice(0, start) + cleaned + val.slice(end)).replace(/\D/g, '').slice(0, 10);
-                phoneInput.value = newVal;
-            });
+            // Admin phone
+            const adminPhoneInput = document.getElementById('regAdminPhone');
+            if (adminPhoneInput) {
+                adminPhoneInput.addEventListener('input', (e) => {
+                    const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    if (e.target.value !== cleaned) e.target.value = cleaned;
+                });
+
+                adminPhoneInput.addEventListener('paste', (e) => {
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    if (!paste) return;
+                    const cleaned = paste.replace(/\D/g, '').slice(0, 10);
+                    e.preventDefault();
+                    const start = adminPhoneInput.selectionStart || 0;
+                    const end = adminPhoneInput.selectionEnd || 0;
+                    const val = adminPhoneInput.value;
+                    const newVal = (val.slice(0, start) + cleaned + val.slice(end)).replace(/\D/g, '').slice(0, 10);
+                    adminPhoneInput.value = newVal;
+                });
+            }
         })();
     </script>
 </body>
